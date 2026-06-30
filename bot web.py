@@ -1,10 +1,11 @@
+import os
 import time
 import requests
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 # === KONFIGURACJA STRATEGII ===
-API_KEY = "49312941ZVtuHpRSorFEozfExgzYSzpMDuHuV"  # Wklej swój aktualny klucz tajny
+API_KEY = "49312941ZVtuHpRSorFEozfExgzYSzpMDuHuV"  # Twój zaktualizowany klucz tajny
 BASE_URL = "https://api.trading212.com/api/v0/equity"
 SYMBOL = "VUSA"  
 WRAZLIWOSC_SIATKI = 0.01  
@@ -111,8 +112,10 @@ class WebServer(BaseHTTPRequestHandler):
         self.wfile.write(b"Bot is running active.")
 
 def uruchom_serwer_www():
-    server = HTTPServer(('0.0.0.0', 10000), WebServer)
-    print("Serwer WWW nasłuchuje na porcie 10000...")
+    # Pobiera dynamicznie port od Render, domyślnie przypisuje 10000
+    port = int(os.environ.get("PORT", 10000))
+    server = HTTPServer(('0.0.0.0', port), WebServer)
+    print(f"Serwer WWW nasłuchuje na porcie {port}...")
     server.serve_forever()
 
 if __name__ == "__main__":
