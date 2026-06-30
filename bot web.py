@@ -17,15 +17,21 @@ HEADERS = {
 }
 
 def pobierz_aktualna_cene():
-    url = f"{BASE_URL}/metadata/ticker?ticker={SYMBOL}"
+    # Pobieramy pełną listę wszystkich instrumentów (to działa na ISA bez błędu 501)
+    url = f"{BASE_URL}/instruments"
     try:
         response = requests.get(url, headers=HEADERS, timeout=10)
         if response.status_code == 200:
-            return float(response.json()['lastPrice'])
+            dane = response.json()
+            # Szukamy VUSA na liście, żeby wyciągnąć aktualną cenę
+            for produkt in dane:
+                if produkt.get('ticker') == SYMBOL:
+                    return float(produkt.get('lastPrice'))
+            print(f"Nie znaleziono symbolu {SYMBOL} na liście instrumentów konta ISA.")
         else:
-            print(f"Błąd T212 (Cena): Status {response.status_code}.")
+            print(f"Błąd T212 (Cena ISA): Status {response.status_code}.")
     except Exception as e:
-        print(f"Problem z połączeniem: {e}")
+        print(f"Problem z połączeniem przy pobieraniu ceny: {e}")
     return None
 
 def sprawdz_otwarte_pozycje():
