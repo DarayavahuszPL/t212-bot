@@ -6,7 +6,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 # === KONFIGURACJA STRATEGII ===
 API_KEY = "49312941ZVtuHpRSorFEozfExgzYSzpMDuHuV"  # Twój klucz tajny
-BASE_URL = "https://api.trading212.com/api/v0/equity"
+BASE_URL = "https://live.trading212.com/api/v0/equity"
 SYMBOL = "VUSA"  
 WRAZLIWOSC_SIATKI = 0.01  
 ILOSC_AKCJI = 9.66  
