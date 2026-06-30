@@ -12,8 +12,7 @@ WRAZLIWOSC_SIATKI = 0.01
 ILOSC_AKCJI = 9.01
 
 HEADERS = {
-    "Authorization": f"{API_KEY}",  # Dla pewności pakujemy to w czysty string
-    "X-Trading212-Account-Type": "ISA"  # Jawna informacja dla API, że strzelasz do konta ISA
+    "Authorization": API_KEY
 }
 
 def pobierz_aktualna_cene():
