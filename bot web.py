@@ -5,7 +5,7 @@ import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 # === KONFIGURACJA STRATEGII ===
-API_KEY = "49312941ZVtuHpRSorFEozfExgzYSzpMDuHuV"  # Twój klucz tajny
+API_KEY = "c7Xy1pySCZZdv69cJ7mB66Sn45Kvmu9HdWo--W_oJzE"  # Twój klucz tajny
 BASE_URL = "https://live.trading212.com/api/v0/equity"
 SYMBOL = "VUSA"  
 WRAZLIWOSC_SIATKI = 0.01  
