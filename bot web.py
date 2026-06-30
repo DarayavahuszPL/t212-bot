@@ -5,7 +5,7 @@ import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 # === KONFIGURACJA STRATEGII ===
-API_KEY = "49312941ZVtuHpRSorFEozfExgzYSzpMDuHuV"  # Twój zaktualizowany klucz tajny
+API_KEY = "49312941ZVtuHpRSorFEozfExgzYSzpMDuHuV"  # Twój klucz tajny
 BASE_URL = "https://api.trading212.com/api/v0/equity"
 SYMBOL = "VUSA"  
 WRAZLIWOSC_SIATKI = 0.01  
@@ -17,19 +17,18 @@ HEADERS = {
 }
 
 def pobierz_aktualna_cene():
-    # Pobieramy pełną listę wszystkich instrumentów (to działa na ISA bez błędu 501)
-    url = f"{BASE_URL}/instruments"
+    # Pobieramy ceny bezpośrednio z otwartej pozycji w Twoim portfelu (100% odporne na błąd 501 na ISA)
+    url = f"{BASE_URL}/portfolio"
     try:
         response = requests.get(url, headers=HEADERS, timeout=10)
         if response.status_code == 200:
-            dane = response.json()
-            # Szukamy VUSA na liście, żeby wyciągnąć aktualną cenę
-            for produkt in dane:
-                if produkt.get('ticker') == SYMBOL:
-                    return float(produkt.get('lastPrice'))
-            print(f"Nie znaleziono symbolu {SYMBOL} na liście instrumentów konta ISA.")
+            for pozycja in response.json():
+                if pozycja.get('ticker') == SYMBOL:
+                    # Wyciągamy aktualny kurs rynkowy aktywa z portfela
+                    return float(pozycja.get('currentPrice'))
+            print(f"Nie znaleziono otwartej pozycji dla {SYMBOL} w portfelu.")
         else:
-            print(f"Błąd T212 (Cena ISA): Status {response.status_code}.")
+            print(f"Błąd T212 (Portfel-Cena): Status {response.status_code}.")
     except Exception as e:
         print(f"Problem z połączeniem przy pobieraniu ceny: {e}")
     return None
@@ -40,8 +39,8 @@ def sprawdz_otwarte_pozycje():
         response = requests.get(url, headers=HEADERS, timeout=10)
         if response.status_code == 200:
             for pozycja in response.json():
-                if pozycja['ticker'] == SYMBOL:
-                    return float(pozycja['quantity']), float(pozycja['averagePrice'])
+                if pozycja.get('ticker') == SYMBOL:
+                    return float(pozycja.get('quantity')), float(pozycja.get('averagePrice'))
         else:
             print(f"Błąd T212 (Portfel): Status {response.status_code}")
     except Exception as e:
@@ -73,6 +72,10 @@ def zloz_zlecenie(typ, ilosc, cena=None):
 
 def uruchom_bota():
     print("Bot Hardcore T212 wystartował w stabilnej chmurze...")
+    
+    # Odczekaj chwilę, aż serwer WWW się podniesie
+    time.sleep(5)
+    
     cena_zero = pobierz_aktualna_cene()
     if not cena_zero:
         print("Nie można pobrać ceny początkowej. Bot ponawia próby w tle...")
@@ -87,7 +90,7 @@ def uruchom_bota():
                 
             if cena_zero == 0.0:
                 cena_zero = cena_rynkowa
-                print(f"🌍 Punkt startowy ustalony na: £{cena_zero}")
+                print(f"🌍 Punkt startowy dla ISA ustalony na: £{cena_zero}")
                 
             ilosc_akcji_w_portfelu, cena_zakupu = sprawdz_otwarte_pozycje()
             
@@ -109,7 +112,6 @@ def uruchom_bota():
             print(f"Błąd pętli głównej: {e}")
             time.sleep(60)
 
-# Serwer WWW wymagany przez platformy Cloud do utrzymania aplikacji przy życiu
 class WebServer(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
@@ -118,16 +120,13 @@ class WebServer(BaseHTTPRequestHandler):
         self.wfile.write(b"Bot is running active.")
 
 def uruchom_serwer_www():
-    # Pobiera dynamicznie port od Render, domyślnie przypisuje 10000
     port = int(os.environ.get("PORT", 10000))
     server = HTTPServer(('0.0.0.0', port), WebServer)
     print(f"Serwer WWW nasłuchuje na porcie {port}...")
     server.serve_forever()
 
 if __name__ == "__main__":
-    # Uruchom bota w osobnym wątku
     t = threading.Thread(target=uruchom_bota)
     t.daemon = True
     t.start()
-    # Uruchom serwer na głównym wątku
     uruchom_serwer_www()
