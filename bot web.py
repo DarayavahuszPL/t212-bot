@@ -7,13 +7,13 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 # === KONFIGURACJA STRATEGII ===
 API_KEY = "c7Xy1pySCZZdv69cJ7mB66Sn45Kvmu9HdWo--W_oJzE"  # Twój klucz tajny
 BASE_URL = "https://live.trading212.com/api/v0/equity"
-SYMBOL = "VUSA"  
-WRAZLIWOSC_SIATKI = 0.01  
-ILOSC_AKCJI = 9.66  
+SYMBOL = "VUSA"
+WRAZLIWOSC_SIATKI = 0.01
+ILOSC_AKCJI = 9.01
 
 HEADERS = {
-    "Authorization": API_KEY,
-    "X-Trading212-Account-Type": "ISA"
+    "Authorization": f"{API_KEY}",  # Dla pewności pakujemy to w czysty string
+    "X-Trading212-Account-Type": "ISA"  # Jawna informacja dla API, że strzelasz do konta ISA
 }
 
 def pobierz_aktualna_cene():
